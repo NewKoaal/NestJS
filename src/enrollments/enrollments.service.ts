@@ -156,9 +156,9 @@ export class EnrollmentsService {
     
     if (inv.status !== InvitationStatus.PENDING) throw new BadRequestException('Invitation not valid');
     if (new Date() > inv.expiresAt) {
-    inv.status = InvitationStatus.EXPIRED;
-    await this.inviteRepo.save(inv);
-    throw new BadRequestException('Invitation expired');
+      inv.status = InvitationStatus.EXPIRED;
+      await this.inviteRepo.save(inv);
+      throw new BadRequestException('Invitation expired');
     }
     
     if (inv.inviteeEmail.toLowerCase() !== userEmail.toLowerCase()) {
@@ -168,10 +168,10 @@ export class EnrollmentsService {
     await this.ensureActiveLimit(userId);
     
     const enrollment = this.enrollmentRepo.create({
-    studentId: userId,
-    courseId: inv.courseId,
-    status: EnrollmentStatus.ACTIVE,
-    startedAt: new Date(),
+      studentId: userId,
+      courseId: inv.courseId,
+      status: EnrollmentStatus.ACTIVE,
+      startedAt: new Date(),
     });
     const saved = await this.enrollmentRepo.save(enrollment);
     

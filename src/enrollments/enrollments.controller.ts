@@ -1,10 +1,13 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, Req, ParseUUIDPipe } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, Req, ParseUUIDPipe, UseGuards } from '@nestjs/common';
 import { EnrollmentsService } from './enrollments.service';
 
 import { MyCoursesQueryDto, UpdateProgressDto } from './dto/enrollment.dto';
 import { EnrollDirectDto, RequestEnrollmentDto } from './dto/enrollment-request.dto';
 import { InviteToCourseDto, AcceptInvitationDto } from './dto/enrollment-invitation.dto';
 
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+
+@UseGuards(JwtAuthGuard)
 @Controller('enrollments')
 export class EnrollmentsController {
   constructor(private readonly enrollmentsService: EnrollmentsService) {}
