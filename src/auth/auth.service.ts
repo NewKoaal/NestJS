@@ -1,6 +1,7 @@
 import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
+import { MailService } from '../mail/mail.service';
 
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
@@ -16,6 +17,7 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private readonly mailService: MailService,
   ) {}
 
   async validateUser(email: string, pass: string): Promise<any> {
@@ -89,6 +91,15 @@ export class AuthService {
     );
 
     const link = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+
+    await this.mailService.sendMail(
+      userWithPass.email,
+      'Reset your password',
+      `<h1>Welcome to EduCollab!</h1>
+       <p>Click below to reset your password:</p>
+       <a href="${link}" target="_blank">Reset password</a>
+       <p>This link will expire in 24 hours.</p>`
+    );
 
     return token;
   }

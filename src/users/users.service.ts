@@ -7,11 +7,16 @@ import { User, UserRole } from './users.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
+import { MailService } from '../mail/mail.service';
+import { AuthService } from '../auth/auth.service';
+
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    private authService: AuthService,
+    private readonly mailService: MailService,
   ) {}
 
   private async hashPassword(plain: string) {
@@ -34,6 +39,18 @@ export class UsersService {
     });
 
     const saved = await this.usersRepository.save(user);
+
+    const token = await this.authService.buildEmailVerifyToken(user.id, user.email);
+    const verifyUrl = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
+
+    await this.mailService.sendMail(
+      user.email,
+      'Verify your EduCollab account',
+      `<h1>Welcome to EduCollab!</h1>
+       <p>Click below to verify your email:</p>
+       <a href="${verifyUrl}" target="_blank">Verify Email</a>
+       <p>This link will expire in 24 hours.</p>`
+    );
 
     delete (saved as any).password;
     return saved;

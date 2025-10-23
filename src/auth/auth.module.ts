@@ -7,6 +7,7 @@ import { LocalStrategy } from './local.strategy';
 import { JwtStrategy } from './jwt.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
@@ -19,7 +20,8 @@ import { ConfigModule } from '@nestjs/config';
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'a',
       signOptions: { expiresIn: '1h' },
-    })
+    }), 
+    MailModule
   ],
   providers: [AuthService, LocalStrategy, JwtStrategy],
   controllers: [AuthController],
