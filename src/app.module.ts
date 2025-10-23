@@ -18,10 +18,10 @@ import { MailModule } from './mail/mail.module';
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: process.env.POSTGRES_HOST || '127.0.0.1',
+      host: process.env.POSTGRES_HOST || 'db',
       port: Number(process.env.POSTGRES_PORT || 5432),
-      username: process.env.POSTGRES_USER || '',
-      password: process.env.POSTGRES_PASSWORD || '',
+      username: process.env.POSTGRES_USER || 'nestjs',
+      password: process.env.POSTGRES_PASSWORD || 'nestjsdb',
       database: process.env.POSTGRES_DATABASE || 'appdb',
       entities: [],
       synchronize: true,
