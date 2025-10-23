@@ -9,5 +9,5 @@ export class InviteToCourseDto {
 }
 
 export class AcceptInvitationDto {
-    @IsString() @IsNotEmpty() code: string;
+    @IsString() @IsNotEmpty() id: string;
 }

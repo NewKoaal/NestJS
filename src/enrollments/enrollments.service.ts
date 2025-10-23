@@ -12,6 +12,8 @@ import { User } from '../users/users.entity';
 import { RequestEnrollmentDto } from './dto/enrollment-request.dto';
 import { InviteToCourseDto } from './dto/enrollment-invitation.dto';
 
+import { MailService } from '../mail/mail.service';
+
 @Injectable()
 export class EnrollmentsService {
   private static readonly MAX_ACTIVE = 5;
@@ -23,6 +25,7 @@ export class EnrollmentsService {
     @InjectRepository(CourseInvitation) private readonly inviteRepo: Repository<CourseInvitation>,
     @InjectRepository(Course) private readonly courseRepo: Repository<Course>,
     @InjectRepository(User) private readonly userRepo: Repository<User>,
+    private readonly mailService: MailService,
   ) {}
 
   private expireIfNeeded(req: EnrollmentRequest): EnrollmentRequest {
@@ -147,11 +150,24 @@ export class EnrollmentsService {
       status: InvitationStatus.PENDING,
       expiresAt,
     });
+
+    const email = dto.inviteeEmail.toLowerCase();
+
+    if (inv) {
+      await this.mailService.sendMail(
+        email,
+        'Course invitation',
+        `<h1>Welcome to EduCollab!</h1>
+         <p>You received an invitation for the course: ${course.title}</p>
+         <p>This invitation will expire in 72 hours.</p>`
+      );
+    }
+
     return this.inviteRepo.save(inv);
   }
 
-  async acceptInvitation(userId: string, userEmail: string, code: string) {
-    const inv = await this.inviteRepo.findOne({ where: { id: code } });
+  async acceptInvitation(userId: string, userEmail: string, id: string) {
+    const inv = await this.inviteRepo.findOne({ where: { id: id } });
     if (!inv) throw new NotFoundException('Invitation not found');
     
     if (inv.status !== InvitationStatus.PENDING) throw new BadRequestException('Invitation not valid');

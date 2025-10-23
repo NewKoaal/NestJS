@@ -45,7 +45,7 @@ export class EnrollmentsController {
   async accept(@Req() req, @Body() dto: AcceptInvitationDto) {
     const userId = req.user.id;
     const email = req.user.email;
-    return this.enrollmentsService.acceptInvitation(userId, email, dto.code);
+    return this.enrollmentsService.acceptInvitation(userId, email, dto.id);
   }
 
   @Get('my-courses')
