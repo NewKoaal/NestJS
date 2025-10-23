@@ -12,7 +12,7 @@ export class MailService {
   async sendMail(to: string, subject: string, html: string) {
     try {
       const { data, error } = await this.resend.emails.send({
-        from: 'EduCollab <noreply@yourdomain.com>',
+        from: 'backendtest <noreply@yourdomain.com>',
         to,
         subject,
         html,
@@ -25,16 +25,15 @@ export class MailService {
     }
   }
 
-  // Example convenience methods
   async sendWelcomeEmail(to: string, username: string) {
     const html = `<h1>Welcome, ${username}!</h1>
-      <p>Thank you for joining EduCollab 🎓</p>`;
-    return this.sendMail(to, 'Welcome to EduCollab!', html);
+      <p>Thank you for joining us 🎓</p>`;
+    return this.sendMail(to, 'Welcome!', html);
   }
 
   async sendCoursePublishedNotification(to: string, courseTitle: string) {
     const html = `<h1>New Course Published!</h1>
-      <p>Your course <b>${courseTitle}</b> is now live 🎉</p>`;
+      <p>Your course <b>${courseTitle}</b> is now live</p>`;
     return this.sendMail(to, `Course "${courseTitle}" Published`, html);
   }
 }
