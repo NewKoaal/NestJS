@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -16,16 +16,19 @@ import { MailModule } from './mail/mail.module';
       envFilePath: '.env',
       isGlobal: true
     }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.POSTGRES_HOST || 'db',
-      port: Number(process.env.POSTGRES_PORT || 5432),
-      username: process.env.POSTGRES_USER || 'nestjs',
-      password: process.env.POSTGRES_PASSWORD || 'nestjsdb',
-      database: process.env.POSTGRES_DATABASE || 'appdb',
-      entities: [],
-      synchronize: true,
-      autoLoadEntities: true,
+    TypeOrmModule.forRootAsync({
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get<string>('POSTGRES_HOST'),
+        port: configService.get<number>('POSTGRES_PORT'),
+        username: configService.get<string>('POSTGRES_USER'),
+        password: configService.get<string>('POSTGRES_PASSWORD'),
+        database: configService.get<string>('POSTGRES_DATABASE'),
+        entities: [],
+        synchronize: true,
+        autoLoadEntities: true,
+      }),
+      inject: [ConfigService],
     }),
     AuthModule, 
     UsersModule,

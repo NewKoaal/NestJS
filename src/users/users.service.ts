@@ -1,6 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
 import * as bcrypt from 'bcrypt';
 import { User, UserRole } from './users.entity';
@@ -8,20 +10,32 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 import { MailService } from '../mail/mail.service';
-import { AuthService } from '../auth/auth.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
-    private authService: AuthService,
     private readonly mailService: MailService,
+    private jwtService: JwtService,
+    private configService: ConfigService,
   ) {}
 
   private async hashPassword(plain: string) {
     const rounds = 12;
     return bcrypt.hash(plain, rounds);
+  }
+
+  private buildEmailVerifyToken(userId: string, email: string) {
+    return this.jwtService.sign(
+      { sub: userId, email },
+      {
+        secret: this.configService.get<string>('JWT_EMAIL_VERIFY_SECRET'),
+        expiresIn: '24h',
+        audience: 'email-verify',
+        issuer: 'test-app',
+      },
+    );
   }
 
   async create(dto: CreateUserDto) {
@@ -40,8 +54,8 @@ export class UsersService {
 
     const saved = await this.usersRepository.save(user);
 
-    const token = await this.authService.buildEmailVerifyToken(user.id, user.email);
-    const verifyUrl = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
+    const token = this.buildEmailVerifyToken(user.id, user.email);
+    const verifyUrl = `${this.configService.get<string>('FRONTEND_URL')}/verify-email?token=${token}`;
 
     await this.mailService.sendMail(
       user.email,
@@ -117,6 +131,6 @@ export class UsersService {
   }
 
   async markEmailVerified(id: string) {
-    
+    await this.usersRepository.update({ id }, { emailVerified: true });
   }
 }

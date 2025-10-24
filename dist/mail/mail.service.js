@@ -11,16 +11,23 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MailService = void 0;
 const common_1 = require("@nestjs/common");
+const config_1 = require("@nestjs/config");
 const resend_1 = require("resend");
 let MailService = class MailService {
+    configService;
     resend;
-    constructor() {
-        this.resend = new resend_1.Resend(process.env.RESEND_API_KEY || 're_4NvE52L2_FzYFTJTJvuF92dC3Z6yeuAEg');
+    constructor(configService) {
+        this.configService = configService;
+        const apiKey = this.configService.get('RESEND_API_KEY');
+        if (!apiKey) {
+            throw new Error('RESEND_API_KEY is not defined in environment variables');
+        }
+        this.resend = new resend_1.Resend(apiKey);
     }
     async sendMail(to, subject, html) {
         try {
             const { data, error } = await this.resend.emails.send({
-                from: 'backendtest <noreply@yourdomain.com>',
+                from: 'backendtest <noreply@educolab.com>',
                 to,
                 subject,
                 html,
@@ -36,7 +43,7 @@ let MailService = class MailService {
     }
     async sendWelcomeEmail(to, username) {
         const html = `<h1>Welcome, ${username}!</h1>
-      <p>Thank you for joining us 🎓</p>`;
+      <p>Thank you for joining us</p>`;
         return this.sendMail(to, 'Welcome!', html);
     }
     async sendCoursePublishedNotification(to, courseTitle) {
@@ -48,6 +55,6 @@ let MailService = class MailService {
 exports.MailService = MailService;
 exports.MailService = MailService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [])
+    __metadata("design:paramtypes", [config_1.ConfigService])
 ], MailService);
 //# sourceMappingURL=mail.service.js.map

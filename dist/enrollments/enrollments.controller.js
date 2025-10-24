@@ -18,6 +18,7 @@ const enrollments_service_1 = require("./enrollments.service");
 const enrollment_dto_1 = require("./dto/enrollment.dto");
 const enrollment_request_dto_1 = require("./dto/enrollment-request.dto");
 const enrollment_invitation_dto_1 = require("./dto/enrollment-invitation.dto");
+const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
 let EnrollmentsController = class EnrollmentsController {
     enrollmentsService;
     constructor(enrollmentsService) {
@@ -45,7 +46,7 @@ let EnrollmentsController = class EnrollmentsController {
     async accept(req, dto) {
         const userId = req.user.id;
         const email = req.user.email;
-        return this.enrollmentsService.acceptInvitation(userId, email, dto.code);
+        return this.enrollmentsService.acceptInvitation(userId, email, dto.id);
     }
     async myCourses(req, q) {
         const userId = req.user.id;
@@ -137,6 +138,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], EnrollmentsController.prototype, "drop", null);
 exports.EnrollmentsController = EnrollmentsController = __decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Controller)('enrollments'),
     __metadata("design:paramtypes", [enrollments_service_1.EnrollmentsService])
 ], EnrollmentsController);

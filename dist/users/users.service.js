@@ -49,16 +49,33 @@ exports.UsersService = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("typeorm");
 const typeorm_2 = require("@nestjs/typeorm");
+const jwt_1 = require("@nestjs/jwt");
+const config_1 = require("@nestjs/config");
 const bcrypt = __importStar(require("bcrypt"));
 const users_entity_1 = require("./users.entity");
+const mail_service_1 = require("../mail/mail.service");
 let UsersService = class UsersService {
     usersRepository;
-    constructor(usersRepository) {
+    mailService;
+    jwtService;
+    configService;
+    constructor(usersRepository, mailService, jwtService, configService) {
         this.usersRepository = usersRepository;
+        this.mailService = mailService;
+        this.jwtService = jwtService;
+        this.configService = configService;
     }
     async hashPassword(plain) {
         const rounds = 12;
         return bcrypt.hash(plain, rounds);
+    }
+    buildEmailVerifyToken(userId, email) {
+        return this.jwtService.sign({ sub: userId, email }, {
+            secret: this.configService.get('JWT_EMAIL_VERIFY_SECRET'),
+            expiresIn: '24h',
+            audience: 'email-verify',
+            issuer: 'test-app',
+        });
     }
     async create(dto) {
         const exists = await this.usersRepository.findOne({ where: { email: dto.email } });
@@ -74,6 +91,12 @@ let UsersService = class UsersService {
             emailVerified: false,
         });
         const saved = await this.usersRepository.save(user);
+        const token = this.buildEmailVerifyToken(user.id, user.email);
+        const verifyUrl = `${this.configService.get('FRONTEND_URL')}/verify-email?token=${token}`;
+        await this.mailService.sendMail(user.email, 'Verify your EduCollab account', `<h1>Welcome to EduCollab!</h1>
+       <p>Click below to verify your email:</p>
+       <a href="${verifyUrl}" target="_blank">Verify Email</a>
+       <p>This link will expire in 24 hours.</p>`);
         delete saved.password;
         return saved;
     }
@@ -133,12 +156,16 @@ let UsersService = class UsersService {
     async findUserByVerifyTokenNotExpired() {
     }
     async markEmailVerified(id) {
+        await this.usersRepository.update({ id }, { emailVerified: true });
     }
 };
 exports.UsersService = UsersService;
 exports.UsersService = UsersService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_2.InjectRepository)(users_entity_1.User)),
-    __metadata("design:paramtypes", [typeorm_1.Repository])
+    __metadata("design:paramtypes", [typeorm_1.Repository,
+        mail_service_1.MailService,
+        jwt_1.JwtService,
+        config_1.ConfigService])
 ], UsersService);
 //# sourceMappingURL=users.service.js.map

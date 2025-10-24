@@ -1,18 +1,23 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
 
 @Injectable()
 export class MailService {
   private resend: Resend;
 
-  constructor() {
-    this.resend = new Resend(process.env.RESEND_API_KEY || 're_4NvE52L2_FzYFTJTJvuF92dC3Z6yeuAEg');
+  constructor(private configService: ConfigService) {
+    const apiKey = this.configService.get<string>('RESEND_API_KEY');
+    if (!apiKey) {
+      throw new Error('RESEND_API_KEY is not defined in environment variables');
+    }
+    this.resend = new Resend(apiKey);
   }
 
   async sendMail(to: string, subject: string, html: string) {
     try {
       const { data, error } = await this.resend.emails.send({
-        from: 'backendtest <noreply@yourdomain.com>',
+        from: 'backendtest <noreply@educolab.com>',
         to,
         subject,
         html,
@@ -27,7 +32,7 @@ export class MailService {
 
   async sendWelcomeEmail(to: string, username: string) {
     const html = `<h1>Welcome, ${username}!</h1>
-      <p>Thank you for joining us 🎓</p>`;
+      <p>Thank you for joining us</p>`;
     return this.sendMail(to, 'Welcome!', html);
   }
 

@@ -1,9 +1,11 @@
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
+import { MailService } from '../mail/mail.service';
 export declare class AuthService {
     private usersService;
     private jwtService;
-    constructor(usersService: UsersService, jwtService: JwtService);
+    private readonly mailService;
+    constructor(usersService: UsersService, jwtService: JwtService, mailService: MailService);
     validateUser(email: string, pass: string): Promise<any>;
     login(user: any): Promise<{
         access_token: string;
@@ -16,7 +18,6 @@ export declare class AuthService {
     resetPasswordWithToken(token: string, newPassword: string): Promise<{
         ok: boolean;
     }>;
-    buildEmailVerifyToken(userId: string, email: string): Promise<string>;
     verifyEmailWithToken(token: string): Promise<{
         ok: boolean;
     }>;

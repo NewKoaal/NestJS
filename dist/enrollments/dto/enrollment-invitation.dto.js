@@ -32,12 +32,12 @@ __decorate([
     __metadata("design:type", Number)
 ], InviteToCourseDto.prototype, "expiresInHours", void 0);
 class AcceptInvitationDto {
-    code;
+    id;
 }
 exports.AcceptInvitationDto = AcceptInvitationDto;
 __decorate([
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
-], AcceptInvitationDto.prototype, "code", void 0);
+], AcceptInvitationDto.prototype, "id", void 0);
 //# sourceMappingURL=enrollment-invitation.dto.js.map

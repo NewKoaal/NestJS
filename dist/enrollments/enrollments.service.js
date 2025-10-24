@@ -22,6 +22,7 @@ const enrollmentRequest_entity_1 = require("./enrollmentRequest.entity");
 const courseInvitation_entity_1 = require("./courseInvitation.entity");
 const courses_entity_1 = require("../courses/courses.entity");
 const users_entity_1 = require("../users/users.entity");
+const mail_service_1 = require("../mail/mail.service");
 let EnrollmentsService = class EnrollmentsService {
     static { EnrollmentsService_1 = this; }
     enrollmentRepo;
@@ -29,14 +30,16 @@ let EnrollmentsService = class EnrollmentsService {
     inviteRepo;
     courseRepo;
     userRepo;
+    mailService;
     static MAX_ACTIVE = 5;
     static APPROVAL_TTL_HOURS = 72;
-    constructor(enrollmentRepo, requestRepo, inviteRepo, courseRepo, userRepo) {
+    constructor(enrollmentRepo, requestRepo, inviteRepo, courseRepo, userRepo, mailService) {
         this.enrollmentRepo = enrollmentRepo;
         this.requestRepo = requestRepo;
         this.inviteRepo = inviteRepo;
         this.courseRepo = courseRepo;
         this.userRepo = userRepo;
+        this.mailService = mailService;
     }
     expireIfNeeded(req) {
         if (!req)
@@ -149,10 +152,16 @@ let EnrollmentsService = class EnrollmentsService {
             status: courseInvitation_entity_1.InvitationStatus.PENDING,
             expiresAt,
         });
+        const email = dto.inviteeEmail.toLowerCase();
+        if (inv) {
+            await this.mailService.sendMail(email, 'Course invitation', `<h1>Welcome to EduCollab!</h1>
+         <p>You received an invitation for the course: ${course.title}</p>
+         <p>This invitation will expire in 72 hours.</p>`);
+        }
         return this.inviteRepo.save(inv);
     }
-    async acceptInvitation(userId, userEmail, code) {
-        const inv = await this.inviteRepo.findOne({ where: { id: code } });
+    async acceptInvitation(userId, userEmail, id) {
+        const inv = await this.inviteRepo.findOne({ where: { id: id } });
         if (!inv)
             throw new common_1.NotFoundException('Invitation not found');
         if (inv.status !== courseInvitation_entity_1.InvitationStatus.PENDING)
@@ -220,6 +229,7 @@ exports.EnrollmentsService = EnrollmentsService = EnrollmentsService_1 = __decor
         typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
-        typeorm_2.Repository])
+        typeorm_2.Repository,
+        mail_service_1.MailService])
 ], EnrollmentsService);
 //# sourceMappingURL=enrollments.service.js.map

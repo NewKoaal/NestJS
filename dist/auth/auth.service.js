@@ -46,6 +46,7 @@ exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
 const users_service_1 = require("../users/users.service");
 const jwt_1 = require("@nestjs/jwt");
+const mail_service_1 = require("../mail/mail.service");
 const bcrypt = __importStar(require("bcrypt"));
 const crypto = __importStar(require("crypto"));
 const RESET_TTL = '15m';
@@ -55,9 +56,11 @@ function shortChecksum(str) {
 let AuthService = class AuthService {
     usersService;
     jwtService;
-    constructor(usersService, jwtService) {
+    mailService;
+    constructor(usersService, jwtService, mailService) {
         this.usersService = usersService;
         this.jwtService = jwtService;
+        this.mailService = mailService;
     }
     async validateUser(email, pass) {
         const user = await this.usersService.findByEmailWithPassword(email);
@@ -116,6 +119,10 @@ let AuthService = class AuthService {
             issuer: 'test-app',
         });
         const link = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+        await this.mailService.sendMail(userWithPass.email, 'Reset your password', `<h1>Welcome to EduCollab!</h1>
+       <p>Click below to reset your password:</p>
+       <a href="${link}" target="_blank">Reset password</a>
+       <p>This link will expire in 24 hours.</p>`);
         return token;
     }
     async resetPasswordWithToken(token, newPassword) {
@@ -141,14 +148,6 @@ let AuthService = class AuthService {
         await this.usersService.updatePassword(userWithPass.id, newHash);
         return { ok: true };
     }
-    async buildEmailVerifyToken(userId, email) {
-        return this.jwtService.sign({ sub: userId, email }, {
-            secret: process.env.JWT_EMAIL_VERIFY_SECRET || 'a',
-            expiresIn: '24h',
-            audience: 'email-verify',
-            issuer: 'test-app',
-        });
-    }
     async verifyEmailWithToken(token) {
         let payload;
         try {
@@ -169,6 +168,7 @@ exports.AuthService = AuthService;
 exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [users_service_1.UsersService,
-        jwt_1.JwtService])
+        jwt_1.JwtService,
+        mail_service_1.MailService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

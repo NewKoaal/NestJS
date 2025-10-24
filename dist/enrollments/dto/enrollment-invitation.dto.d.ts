@@ -4,5 +4,5 @@ export declare class InviteToCourseDto {
     expiresInHours: number;
 }
 export declare class AcceptInvitationDto {
-    code: string;
+    id: string;
 }

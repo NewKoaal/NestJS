@@ -130,18 +130,6 @@ export class AuthService {
     return { ok: true };
   }
 
-  async buildEmailVerifyToken(userId: string, email: string) {
-    return this.jwtService.sign(
-      { sub: userId, email },
-      {
-        secret: process.env.JWT_EMAIL_VERIFY_SECRET || 'a',
-        expiresIn: '24h',
-        audience: 'email-verify',
-        issuer: 'test-app',
-      },
-    );
-  }
-
   async verifyEmailWithToken(token: string) {
     let payload: any;
     try {
